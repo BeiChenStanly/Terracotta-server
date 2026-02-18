@@ -1,0 +1,31 @@
+# Terracotta Server 配置文件
+# Terracotta Server Configuration
+
+# ========================
+# Minecraft 服务端端口
+# The Minecraft server port to expose through the P2P network
+# ========================
+port = 25565
+
+# ========================
+# 固定联机码 (可选)
+# Fixed connection code (optional)
+#
+# 如果设置此项，每次启动服务器时将使用相同的联机码。
+# 这样玩家可以始终使用同一个码来连接。
+# 格式: U/XXXX-XXXX-XXXX-XXXX
+#
+# If set, the same code will be used every time the server starts.
+# This allows players to always use the same code to connect.
+# Format: U/XXXX-XXXX-XXXX-XXXX
+# ========================
+# code = "U/ABCD-1234-EFGH-5678"
+
+# ========================
+# 公共中继服务器
+# Public relay servers
+#
+# 默认中继服务器总是包含在内。你可以在此处添加额外的中继服务器。
+# Default relay servers are always included. You can add additional ones here.
+# ========================
+public_servers = []

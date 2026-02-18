@@ -1,0 +1,38 @@
+[package]
+name = "terracotta-server"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+description = "Terracotta Server - CLI tool for exposing Minecraft servers via EasyTier P2P networking"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+rand = "0.8"
+hex = "0.4"
+socket2 = "0.5"
+ctrlc = "3"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+sevenz-rust2 = { version = "0.18", default-features = false, features = ["util"] }
+
+[build-dependencies]
+sevenz-rust2 = { version = "0.18", default-features = false, features = ["compress", "util"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "charset", "http2", "blocking", "zstd"] }
+zip = "4"
+toml = "0.8"
+
+[profile.release]
+opt-level = "z"
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.release.package."*"]
+opt-level = "z"
+strip = true
+codegen-units = 1

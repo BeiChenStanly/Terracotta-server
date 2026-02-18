@@ -1,0 +1,8 @@
+Terracotta
+terracotta.log
+
+# Rust build artifacts
+**/target/
+
+# EasyTier build cache (downloaded at build time by build.rs)
+**/.easytier/
