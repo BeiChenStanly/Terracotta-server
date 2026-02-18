@@ -98,6 +98,12 @@ The resulting binary is fully self-contained.
 5. **Ready** — displays the connection code; players enter it in their Terracotta client to join
 6. **Shutdown** — Ctrl+C gracefully stops EasyTier and cleans up temp files
 
+### License
+
+This project is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE), consistent with the upstream [Terracotta](https://github.com/burningtnt/Terracotta) project.
+
+Copyright of [Terracotta](https://github.com/burningtnt/Terracotta) belongs to its original authors.
+
 ---
 
 ## 中文
@@ -194,8 +200,14 @@ cargo build --release
 5. **就绪** — 显示联机码；玩家在 Terracotta 客户端中输入即可加入
 6. **关闭** — Ctrl+C 优雅停止 EasyTier 并清理临时文件
 
+### 许可证
+
+本项目使用 [GNU Affero General Public License v3.0 or later](LICENSE) 许可，与上游 [Terracotta](https://github.com/burningtnt/Terracotta) 项目保持一致。
+
+[Terracotta](https://github.com/burningtnt/Terracotta) 的版权归其原作者所有。
+
 ---
 
 ## License
 
-GPL v3.0
+AGPL-3.0-or-later

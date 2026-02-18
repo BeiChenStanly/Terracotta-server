@@ -3,6 +3,7 @@ name = "terracotta-server"
 version = "0.1.0"
 edition = "2024"
 build = "build.rs"
+license = "AGPL-3.0-or-later"
 description = "Terracotta Server - CLI tool for exposing Minecraft servers via EasyTier P2P networking"
 
 [dependencies]
