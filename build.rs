@@ -24,7 +24,6 @@ fn main() {
 fn download_easytier() {
     struct EasytierFiles {
         url: &'static str,
-        files: Vec<&'static str>,
         entry: &'static str,
         cli: &'static str,
         desc: &'static str,
@@ -38,90 +37,54 @@ fn download_easytier() {
     let conf = match (target_os.as_str(), target_arch.as_str()) {
         ("windows", "x86_64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-windows-x86_64-{V}.zip",
-            files: vec![
-                "easytier-windows-x86_64/easytier-core.exe",
-                "easytier-windows-x86_64/easytier-cli.exe",
-            ],
             entry: "easytier-core.exe",
             cli: "easytier-cli.exe",
             desc: "windows-x86_64",
         },
         ("windows", "aarch64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-windows-arm64-{V}.zip",
-            files: vec![
-                "easytier-windows-arm64/easytier-core.exe",
-                "easytier-windows-arm64/easytier-cli.exe",
-            ],
             entry: "easytier-core.exe",
             cli: "easytier-cli.exe",
             desc: "windows-arm64",
         },
         ("linux", "x86_64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-linux-x86_64-{V}.zip",
-            files: vec![
-                "easytier-linux-x86_64/easytier-core",
-                "easytier-linux-x86_64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "linux-x86_64",
         },
         ("linux", "aarch64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-linux-aarch64-{V}.zip",
-            files: vec![
-                "easytier-linux-aarch64/easytier-core",
-                "easytier-linux-aarch64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "linux-arm64",
         },
         ("linux", "riscv64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-linux-riscv64-{V}.zip",
-            files: vec![
-                "easytier-linux-riscv64/easytier-core",
-                "easytier-linux-riscv64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "linux-riscv64",
         },
         ("linux", "loongarch64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-linux-loongarch64-{V}.zip",
-            files: vec![
-                "easytier-linux-loongarch64/easytier-core",
-                "easytier-linux-loongarch64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "linux-loongarch64",
         },
         ("macos", "x86_64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-macos-x86_64-{V}.zip",
-            files: vec![
-                "easytier-macos-x86_64/easytier-core",
-                "easytier-macos-x86_64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "macos-x86_64",
         },
         ("macos", "aarch64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-macos-aarch64-{V}.zip",
-            files: vec![
-                "easytier-macos-aarch64/easytier-core",
-                "easytier-macos-aarch64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "macos-arm64",
         },
         ("freebsd", "x86_64") => EasytierFiles {
             url: "https://github.com/burningtnt/EasyTier/releases/download/{V}/easytier-freebsd-13.2-x86_64-{V}.zip",
-            files: vec![
-                "easytier-freebsd-13.2-x86_64/easytier-core",
-                "easytier-freebsd-13.2-x86_64/easytier-cli",
-            ],
             entry: "easytier-core",
             cli: "easytier-cli",
             desc: "freebsd-x86_64",
@@ -171,18 +134,27 @@ fn download_easytier() {
         version, conf.desc
     );
 
-    let source =
-        Path::new(&env::temp_dir()).join(format!("terracotta-server-build-{}.zip", process::id()));
+    let manifest_dir_value = get_var("CARGO_MANIFEST_DIR").unwrap();
+    let manifest_dir = Path::new(&manifest_dir_value);
+    let local_source = manifest_dir.join(format!("easytier-{}-{}.zip", conf.desc, version));
+    let source = if fs::metadata(&local_source).is_ok() {
+        eprintln!("Using local EasyTier archive: {}", local_source.display());
+        local_source
+    } else {
+        let source = Path::new(&env::temp_dir())
+            .join(format!("terracotta-server-build-{}.zip", process::id()));
 
-    reqwest::blocking::get(conf.url.replace("{V}", version))
-        .unwrap()
-        .copy_to(&mut io::BufWriter::new(
-            fs::File::create(&source).unwrap(),
-        ))
-        .inspect_err(|_| {
-            let _ = fs::remove_file(&source);
-        })
-        .unwrap();
+        reqwest::blocking::get(conf.url.replace("{V}", version))
+            .unwrap()
+            .copy_to(&mut io::BufWriter::new(
+                fs::File::create(&source).unwrap(),
+            ))
+            .inspect_err(|_| {
+                let _ = fs::remove_file(&source);
+            })
+            .unwrap();
+        source
+    };
 
     let mut archive = zip::ZipArchive::new(fs::File::open(&source).unwrap()).unwrap();
     let target = base.join("easytier.7z.tmp");
@@ -206,18 +178,25 @@ fn download_easytier() {
 
     let mut archive_entries: Vec<ArchiveEntry> = vec![];
     let mut archive_readers: Vec<SourceReader<Cursor<Vec<u8>>>> = vec![];
-    for file in conf.files.iter() {
-        let mut entry = archive.by_name(file).unwrap();
+    for index in 0..archive.len() {
+        let mut entry = archive.by_index(index).unwrap();
+        if !entry.is_file() {
+            continue;
+        }
         let mut buf: Vec<u8> = vec![];
         entry.read_to_end(&mut buf).unwrap();
 
-        archive_entries.push(ArchiveEntry::new_file(
-            Path::new(&entry.enclosed_name().unwrap())
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap(),
-        ));
+        // Strip all directory prefixes so files land flat in the extraction dir.
+        let file_name = entry
+            .enclosed_name()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+
+        archive_entries.push(ArchiveEntry::new_file(&file_name));
         archive_readers.push(SourceReader::new(Cursor::new(buf)));
     }
     writer
@@ -233,8 +212,10 @@ fn download_easytier() {
     fs::write(&entry_conf, conf.entry).unwrap();
     fs::write(&cli_conf, conf.cli).unwrap();
 
-    // Clean up temp zip
-    let _ = fs::remove_file(&source);
+    // Clean up temp zip only when we downloaded one ourselves.
+    if source.starts_with(env::temp_dir()) {
+        let _ = fs::remove_file(&source);
+    }
 
     eprintln!("EasyTier {} downloaded and archived.", version);
 }
