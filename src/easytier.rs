@@ -184,7 +184,39 @@ pub fn start(args: Vec<String>) -> Result<EasyTier, String> {
         .spawn()
         .map_err(|e| format!("无法启动 easytier-core: {}", e))?;
 
-    // Forward stdout/stderr to logger
+    // Quick health check: wait briefly to see if the process exits immediately
+    // (e.g. due to missing DLL dependencies like packet.dll from Npcap).
+    if cfg!(windows) {
+        thread::sleep(Duration::from_millis(500));
+    }
+    match process.try_wait() {
+        Ok(Some(status)) => {
+            let code = status
+                .code()
+                .map(|c| c.to_string())
+                .unwrap_or_else(|| status.to_string());
+            log::error!(
+                "EasyTier 在启动后立即退出 (状态: {})。\
+                 \n  这可能是因为缺少运行时依赖。\
+                 \n  在 Windows 上，EasyTier 需要 Npcap (https://npcap.com) 来提供 packet.dll。\
+                 \n  请安装 Npcap 后重试。\
+                 \n  如果问题仍然存在，请尝试在命令行中直接运行:\
+                 \n    {} --help",
+                code,
+                factory.exe.display()
+            );
+            return Err(format!("EasyTier 进程启动后立即退出，状态: {}", code));
+        }
+        Ok(None) => {
+            // Process is still running — good.
+        }
+        Err(e) => {
+            log::warn!("检查 EasyTier 进程状态时出错: {}", e);
+        }
+    }
+
+    // Forward stdout/stderr to logger (take AFTER the health check to avoid
+    // consuming the handles before try_wait).
     if let Some(stdout) = process.stdout.take() {
         thread::spawn(move || {
             let reader = BufReader::new(stdout);
