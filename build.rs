@@ -139,7 +139,7 @@ fn download_easytier() {
     let local_source = manifest_dir.join(format!("easytier-{}-{}.zip", conf.desc, version));
     let source = if fs::metadata(&local_source).is_ok() {
         eprintln!("Using local EasyTier archive: {}", local_source.display());
-        local_source
+        local_source.clone()
     } else {
         let source = Path::new(&env::temp_dir())
             .join(format!("terracotta-server-build-{}.zip", process::id()));
