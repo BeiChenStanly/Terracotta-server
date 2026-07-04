@@ -213,7 +213,7 @@ fn download_easytier() {
     fs::write(&cli_conf, conf.cli).unwrap();
 
     // Clean up temp zip only when we downloaded one ourselves.
-    if source.starts_with(env::temp_dir()) {
+    if source != local_source {
         let _ = fs::remove_file(&source);
     }
 
