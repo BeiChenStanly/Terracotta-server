@@ -186,7 +186,9 @@ pub fn start(args: Vec<String>) -> Result<EasyTier, String> {
 
     // Quick health check: wait briefly to see if the process exits immediately
     // (e.g. due to missing DLL dependencies like packet.dll from Npcap).
-    thread::sleep(Duration::from_millis(500));
+    if cfg!(windows) {
+        thread::sleep(Duration::from_millis(500));
+    }
     match process.try_wait() {
         Ok(Some(status)) => {
             let code = status.code().map(|c| format!("{}", c))
