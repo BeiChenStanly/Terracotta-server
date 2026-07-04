@@ -191,8 +191,10 @@ pub fn start(args: Vec<String>) -> Result<EasyTier, String> {
     }
     match process.try_wait() {
         Ok(Some(status)) => {
-            let code = status.code().map(|c| format!("{}", c))
-                .unwrap_or_else(|| format!("{:#x}", status.code().unwrap_or(0)));
+            let code = status
+                .code()
+                .map(|c| c.to_string())
+                .unwrap_or_else(|| status.to_string());
             log::error!(
                 "EasyTier 在启动后立即退出 (状态: {})。\
                  \n  这可能是因为缺少运行时依赖。\
